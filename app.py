@@ -70,7 +70,34 @@ def create_gasto():
     #Aqui sigue si es GET
     return render_template('create_gasto.html')
 
+#ACTUALIZAR
+@app.route('/update/<int:id>', methods=['GET','POST'])
+def update_gasto(id):
+    gasto = Gasto.query.get(id)
+    if request.method == 'POST':
+        from datetime import datetime
+        gasto.fecha = datetime.strptime(request.form['fecha'], '%Y-%m-%d')
+        gasto.categoria = request.form['categoria']
+        gasto.monto = float(request.form['monto'])
+        gasto.descripcion = request.form['descripcion']
+        gasto.metodo_pago = request.form['metodo_pago']
+        db.session.commit()
+        return redirect(url_for('index'))
+    #Aqui sigue si es GET
+    return render_template('update_gasto.html', gasto=gasto)
 
+#ELIMINAR
+@app.route('/delete/<int:id>')
+def delete_gasto(id):
+    gasto = Gasto.query.get(id)
+    if gasto:
+        db.session.delete(gasto)
+        db.session.commit()
+    return redirect(url_for('index'))
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
 
 #source bin/activate
 #pip install -r requirements.txt
