@@ -86,6 +86,14 @@ def update_gasto(id):
     #Aqui sigue si es GET
     return render_template('update_gasto.html', gasto=gasto)
 
+#ELIMINAR
+@app.route('/delete/<int:id>')
+def delete_gasto(id):
+    gasto = Gasto.query.get(id)
+    if gasto:
+        db.session.delete(gasto)
+        db.session.commit()
+    return redirect(url_for('index'))
 
 
 if __name__ == '__main__':
