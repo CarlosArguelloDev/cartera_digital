@@ -11,28 +11,34 @@ load_dotenv()
 app = Flask(__name__)
 
 #Configuración de la base de datos PostgreSQL
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+database_url = os.getenv('DATABASE_URL')
+# Fix para SQLAlchemy 1.4+: reemplazar postgres:// con postgresql://
+if database_url and database_url.startswith('postgres://'):
+    database_url = database_url.replace('postgres://', 'postgresql://', 1)
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False # Desactivar el seguimiento de modificaciones de objetos
 
 # Inicializar SQLAlchemy
 db = SQLAlchemy(app)
 
 #Modelo de la base de datos
-class Planta(db.Model):
-    __tablename__= 'plantas'
-    id_planta = db.Column(db.Integer, primary_key=True)
-    nombre_cientifico = db.Column(db.String)
-    nombre_comun = db.Column(db.String)
-    descripcion = db.Column(db.String)
-    stock = db.Column(db.Integer)
+class Gasto(db.Model):
+    __tablename__= 'gastos'
+    id = db.Column(db.Integer, primary_key=True)
+    fecha = db.Column(db.DateTime, nullable=False)
+    categoria = db.Column(db.String(50), nullable=False)
+    monto = db.Column(db.Float, nullable=False)
+    descripcion = db.Column(db.String(200))
+    metodo_pago = db.Column(db.String(50), nullable=False)
 
     def to_dict(self):
         return{
-            'id_planta': self.id_planta,
-            'nombre_cientifico': self.nombre_cientifico,
-            'nombre_comun': self.nombre_comun,
+            'id': self.id,
+            'fecha': self.fecha.strftime('%Y-%m-%d'),
+            'categoria': self.categoria,
+            'monto': self.monto,
             'descripcion': self.descripcion,
-            'stock': self.stock
+            'metodo_pago': self.metodo_pago
         }
 
 #Crear tablas si no existen
@@ -42,52 +48,29 @@ with app.app_context():
 #Ruta raiz
 @app.route('/', methods=['GET'])
 def index():
-    #Trae todas las plantas
-    plantas = Planta.query.all()
-    return render_template('index.html', plantas = plantas)
+    #Trae todos los gastos ordenados por fecha (más reciente primero)
+    gastos = Gasto.query.order_by(Gasto.fecha.desc()).all()
+    #Calcular total de gastos
+    total = sum(gasto.monto for gasto in gastos)
+    return render_template('index.html', gastos=gastos, total=total)
 
 #CREAR
 @app.route('/new', methods=['GET','POST'])
-def create_planta():
+def create_gasto():
     if request.method == 'POST':
-        id_planta = request.form['id_planta']
-        nombre_cientifico = request.form['nombre_cientifico']
-        nombre_comun = request.form['nombre_comun']
+        from datetime import datetime
+        fecha = datetime.strptime(request.form['fecha'], '%Y-%m-%d')
+        categoria = request.form['categoria']
+        monto = float(request.form['monto'])
         descripcion = request.form['descripcion']
-        stock = request.form['stock']
-        db.session.add(Planta(id_planta=id_planta, nombre_cientifico=nombre_cientifico, nombre_comun=nombre_comun, descripcion=descripcion, stock=stock))
+        metodo_pago = request.form['metodo_pago']
+        db.session.add(Gasto(fecha=fecha, categoria=categoria, monto=monto, descripcion=descripcion, metodo_pago=metodo_pago))
         db.session.commit()
         return redirect(url_for('index'))
     #Aqui sigue si es GET
-    return render_template('create_planta.html')
-
-#ELIMINAR
-@app.route('/delete/<int:id_planta>')
-def delete_planta(id_planta):
-    planta = Planta.query.get(id_planta)
-    if planta:
-        db.session.delete(planta)
-        db.session.commit()
-    return redirect(url_for('index'))
-
-#ACTUALIZAR
-@app.route('/update/<int:id_planta>', methods=['GET','POST'])
-def update_planta(id_planta):
-    planta = Planta.query.get(id_planta)
-    if request.method == 'POST':
-        #No se modifica: id_planta
-        planta.nombre_cientifico = request.form['nombre_cientifico']
-        planta.nombre_comun = request.form['nombre_comun']
-        planta.descripcion = request.form['descripcion']
-        planta.stock = request.form['stock']
-        db.session.commit()
-        return redirect(url_for('index'))
-    #Aqui sigue si es GET
-    return render_template('update_planta.html', planta=planta)
+    return render_template('create_gasto.html')
 
 
-if __name__ == '__main__':
-    app.run(debug=True)
 
 #source bin/activate
 #pip install -r requirements.txt

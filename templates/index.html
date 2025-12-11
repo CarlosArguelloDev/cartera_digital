@@ -1,35 +1,62 @@
 {% extends 'base.html' %}
-{% block title %}Listado de Plantas{% endblock %}
+{% block title %}Mis Gastos - Cartera Digital{% endblock %}
 {% block content %}
-<a href="{{ url_for('create_planta') }}" class="btn btn-success mb-3">Agregar Planta</a>
-<br>
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>ID Planta</th>
-            <th>Nombre Cientifico</th>
-            <th>Nombre Comun</th>
-            <th>Descripcion</th>
-            <th>Stock</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for planta in plantas %}
-        <tr>
-            <td>{{ planta.id_planta }}</td>
-            <td>{{ planta.nombre_cientifico }}</td>
-            <td>{{ planta.nombre_comun }}</td>
-            <td>{{ planta.descripcion }}</td>
-            <td>{{ planta.stock }}</td>
-            <td>
-                <a href="{{ url_for('update_planta', id_planta = planta.id_planta) }}" 
-                class="btn btn-warning">Actualizar</a>
-                <a href="{{ url_for('delete_planta', id_planta = planta.id_planta) }}" 
-                class="btn btn-danger">Eliminar</a>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+
+<!-- Summary Card -->
+<div class="summary-card">
+    <h3><i class="fas fa-chart-line"></i> Total de Gastos</h3>
+    <p class="total-amount">${{ "%.2f"|format(total) }}</p>
+</div>
+
+<a href="{{ url_for('create_gasto') }}" class="btn btn-primary-custom mb-3">
+    <i class="fas fa-plus-circle"></i> Registrar Gasto
+</a>
+
+{% if gastos %}
+<div class="table-responsive">
+    <table class="table table-expenses">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Categoría</th>
+                <th>Descripción</th>
+                <th>Monto</th>
+                <th>Método de Pago</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for gasto in gastos %}
+            <tr>
+                <td>{{ gasto.fecha.strftime('%d/%m/%Y') }}</td>
+                <td>
+                    <span class="badge-categoria badge-{{ gasto.categoria.lower() }}">
+                        {{ gasto.categoria }}
+                    </span>
+                </td>
+                <td>{{ gasto.descripcion }}</td>
+                <td class="amount-display">${{ "%.2f"|format(gasto.monto) }}</td>
+                <td>{{ gasto.metodo_pago }}</td>
+                <td>
+                    <a href="{{ url_for('update_gasto', id=gasto.id) }}" class="btn btn-warning btn-sm">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <a href="{{ url_for('delete_gasto', id=gasto.id) }}" class="btn btn-danger btn-sm"
+                        onclick="return confirm('¿Estás seguro de eliminar este gasto?')">
+                        <i class="fas fa-trash"></i>
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="empty-state">
+    <i class="fas fa-inbox"></i>
+    <h3>No hay gastos registrados</h3>
+    <p>Comienza registrando tu primer gasto</p>
+</div>
+{% endif %}
 
 {% endblock %}
