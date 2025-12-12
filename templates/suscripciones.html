@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% block title %}Suscripciones - Cartera Digital{% endblock %}
+{% block content %}
+
+<!-- View Selector -->
+<div class="view-selector mb-4">
+    <div class="btn-group w-100" role="group">
+        <a href="{{ url_for('index') }}" class="btn btn-selector">
+            <i class="fas fa-receipt"></i> Gastos
+        </a>
+        <a href="{{ url_for('suscripciones') }}" class="btn btn-selector active">
+            <i class="fas fa-sync-alt"></i> Suscripciones
+        </a>
+    </div>
+</div>
+
+<!-- Summary Card -->
+<div class="summary-card summary-card-subscription">
+    <h3><i class="fas fa-calendar-check"></i> Total Mensual de Suscripciones</h3>
+    <p class="total-amount">${{ "%.2f"|format(total_mensual) }}</p>
+    <small>Solo suscripciones activas</small>
+</div>
+
+<a href="{{ url_for('create_suscripcion') }}" class="btn btn-primary-custom mb-3">
+    <i class="fas fa-plus-circle"></i> Agregar Suscripción
+</a>
+
+{% if suscripciones %}
+<div class="table-responsive">
+    <table class="table table-expenses">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Categoría</th>
+                <th>Monto Mensual</th>
+                <th>Día de Pago</th>
+                <th>Método de Pago</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sub in suscripciones %}
+            <tr class="{% if not sub.activa %}subscription-inactive{% endif %}">
+                <td><strong>{{ sub.nombre }}</strong></td>
+                <td>
+                    <span class="badge-categoria badge-{{ sub.categoria.lower() }}">
+                        {{ sub.categoria }}
+                    </span>
+                </td>
+                <td class="amount-display">${{ "%.2f"|format(sub.monto) }}</td>
+                <td>
+                    <span class="badge bg-info text-dark">Día {{ sub.dia_pago }}</span>
+                </td>
+                <td>{{ sub.metodo_pago }}</td>
+                <td>
+                    {% if sub.activa %}
+                    <span class="badge bg-success">
+                        <i class="fas fa-check-circle"></i> Activa
+                    </span>
+                    {% else %}
+                    <span class="badge bg-secondary">
+                        <i class="fas fa-pause-circle"></i> Inactiva
+                    </span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{{ url_for('toggle_suscripcion', id=sub.id) }}" class="btn btn-info btn-sm"
+                        title="{% if sub.activa %}Desactivar{% else %}Activar{% endif %}">
+                        <i class="fas fa-power-off"></i>
+                    </a>
+                    <a href="{{ url_for('update_suscripcion', id=sub.id) }}" class="btn btn-warning btn-sm">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <a href="{{ url_for('delete_suscripcion', id=sub.id) }}" class="btn btn-danger btn-sm"
+                        onclick="return confirm('¿Estás seguro de eliminar esta suscripción?')">
+                        <i class="fas fa-trash"></i>
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="empty-state">
+    <i class="fas fa-calendar-times"></i>
+    <h3>No hay suscripciones registradas</h3>
+    <p>Comienza agregando tu primera suscripción mensual</p>
+</div>
+{% endif %}
+
+{% endblock %}

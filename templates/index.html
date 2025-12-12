@@ -2,6 +2,18 @@
 {% block title %}Mis Gastos - Cartera Digital{% endblock %}
 {% block content %}
 
+<!-- View Selector -->
+<div class="view-selector mb-4">
+    <div class="btn-group w-100" role="group">
+        <a href="{{ url_for('index') }}" class="btn btn-selector active">
+            <i class="fas fa-receipt"></i> Gastos
+        </a>
+        <a href="{{ url_for('suscripciones') }}" class="btn btn-selector">
+            <i class="fas fa-sync-alt"></i> Suscripciones
+        </a>
+    </div>
+</div>
+
 <!-- Summary Card -->
 <div class="summary-card">
     <h3><i class="fas fa-chart-line"></i> Total de Gastos</h3>
