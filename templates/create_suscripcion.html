@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% block title %}Agregar Suscripción - Cartera Digital{% endblock %}
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h2 class="card-title mb-4">
+                    <i class="fas fa-sync-alt"></i> Agregar Nueva Suscripción
+                </h2>
+
+                <form method="POST" action="{{ url_for('create_suscripcion') }}">
+                    <div class="mb-3">
+                        <label for="nombre" class="form-label">
+                            <i class="fas fa-tag"></i> Nombre de la Suscripción
+                        </label>
+                        <input type="text" class="form-control" id="nombre" name="nombre"
+                            placeholder="Ej: Netflix, Spotify, Gym..." required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="monto" class="form-label">
+                            <i class="fas fa-dollar-sign"></i> Monto Mensual
+                        </label>
+                        <input type="number" step="0.01" class="form-control" id="monto" name="monto" placeholder="0.00"
+                            required min="0">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="dia_pago" class="form-label">
+                            <i class="fas fa-calendar-day"></i> Día de Pago (1-31)
+                        </label>
+                        <input type="number" class="form-control" id="dia_pago" name="dia_pago" placeholder="15"
+                            required min="1" max="31">
+                        <small class="text-muted">Día del mes en que se cobra la suscripción</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="categoria" class="form-label">
+                            <i class="fas fa-tags"></i> Categoría
+                        </label>
+                        <select class="form-select" id="categoria" name="categoria" required>
+                            <option value="">Selecciona una categoría</option>
+                            <option value="Entretenimiento">🎬 Entretenimiento</option>
+                            <option value="Servicios">💡 Servicios</option>
+                            <option value="Salud">⚕️ Salud</option>
+                            <option value="Transporte">🚗 Transporte</option>
+                            <option value="Otros">📦 Otros</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="metodo_pago" class="form-label">
+                            <i class="fas fa-credit-card"></i> Método de Pago
+                        </label>
+                        <select class="form-select" id="metodo_pago" name="metodo_pago" required>
+                            <option value="">Selecciona un método</option>
+                            <option value="Tarjeta">💳 Tarjeta</option>
+                            <option value="Transferencia">🏦 Transferencia</option>
+                            <option value="Efectivo">💵 Efectivo</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="activa" name="activa" checked>
+                        <label class="form-check-label" for="activa">
+                            <i class="fas fa-check-circle"></i> Suscripción activa
+                        </label>
+                        <small class="d-block text-muted">Desmarca si la suscripción está pausada o cancelada</small>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('suscripciones') }}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary-custom">
+                            <i class="fas fa-save"></i> Guardar Suscripción
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
