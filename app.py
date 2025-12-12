@@ -41,6 +41,27 @@ class Gasto(db.Model):
             'metodo_pago': self.metodo_pago
         }
 
+class Suscripcion(db.Model):
+    __tablename__= 'suscripciones'
+    id = db.Column(db.Integer, primary_key=True)
+    nombre = db.Column(db.String(100), nullable=False)
+    monto = db.Column(db.Float, nullable=False)
+    dia_pago = db.Column(db.Integer, nullable=False)  # 1-31
+    categoria = db.Column(db.String(50), nullable=False)
+    metodo_pago = db.Column(db.String(50), nullable=False)
+    activa = db.Column(db.Boolean, default=True, nullable=False)
+
+    def to_dict(self):
+        return{
+            'id': self.id,
+            'nombre': self.nombre,
+            'monto': self.monto,
+            'dia_pago': self.dia_pago,
+            'categoria': self.categoria,
+            'metodo_pago': self.metodo_pago,
+            'activa': self.activa
+        }
+
 #Crear tablas si no existen
 with app.app_context():
     db.create_all()
@@ -86,6 +107,76 @@ def update_gasto(id):
     #Aqui sigue si es GET
     return render_template('update_gasto.html', gasto=gasto)
 
+#ELIMINAR
+@app.route('/delete/<int:id>')
+def delete_gasto(id):
+    gasto = Gasto.query.get(id)
+    if gasto:
+        db.session.delete(gasto)
+        db.session.commit()
+    return redirect(url_for('index'))
+
+
+# ============= RUTAS DE SUSCRIPCIONES =============
+
+#LISTAR SUSCRIPCIONES
+@app.route('/suscripciones', methods=['GET'])
+def suscripciones():
+    #Trae todas las suscripciones ordenadas por nombre
+    suscripciones = Suscripcion.query.order_by(Suscripcion.nombre).all()
+    #Calcular total mensual solo de suscripciones activas
+    total_mensual = sum(sub.monto for sub in suscripciones if sub.activa)
+    return render_template('suscripciones.html', suscripciones=suscripciones, total_mensual=total_mensual)
+
+#CREAR SUSCRIPCION
+@app.route('/suscripciones/new', methods=['GET','POST'])
+def create_suscripcion():
+    if request.method == 'POST':
+        nombre = request.form['nombre']
+        monto = float(request.form['monto'])
+        dia_pago = int(request.form['dia_pago'])
+        categoria = request.form['categoria']
+        metodo_pago = request.form['metodo_pago']
+        activa = 'activa' in request.form  # Checkbox
+        db.session.add(Suscripcion(nombre=nombre, monto=monto, dia_pago=dia_pago, categoria=categoria, metodo_pago=metodo_pago, activa=activa))
+        db.session.commit()
+        return redirect(url_for('suscripciones'))
+    #Aqui sigue si es GET
+    return render_template('create_suscripcion.html')
+
+#ACTUALIZAR SUSCRIPCION
+@app.route('/suscripciones/update/<int:id>', methods=['GET','POST'])
+def update_suscripcion(id):
+    suscripcion = Suscripcion.query.get(id)
+    if request.method == 'POST':
+        suscripcion.nombre = request.form['nombre']
+        suscripcion.monto = float(request.form['monto'])
+        suscripcion.dia_pago = int(request.form['dia_pago'])
+        suscripcion.categoria = request.form['categoria']
+        suscripcion.metodo_pago = request.form['metodo_pago']
+        suscripcion.activa = 'activa' in request.form
+        db.session.commit()
+        return redirect(url_for('suscripciones'))
+    #Aqui sigue si es GET
+    return render_template('update_suscripcion.html', suscripcion=suscripcion)
+
+#ELIMINAR SUSCRIPCION
+@app.route('/suscripciones/delete/<int:id>')
+def delete_suscripcion(id):
+    suscripcion = Suscripcion.query.get(id)
+    if suscripcion:
+        db.session.delete(suscripcion)
+        db.session.commit()
+    return redirect(url_for('suscripciones'))
+
+#TOGGLE ACTIVA/INACTIVA
+@app.route('/suscripciones/toggle/<int:id>')
+def toggle_suscripcion(id):
+    suscripcion = Suscripcion.query.get(id)
+    if suscripcion:
+        suscripcion.activa = not suscripcion.activa
+        db.session.commit()
+    return redirect(url_for('suscripciones'))
 
 
 if __name__ == '__main__':
