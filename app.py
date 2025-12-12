@@ -180,7 +180,7 @@ def toggle_suscripcion(id):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
 
 #source bin/activate
 #pip install -r requirements.txt
